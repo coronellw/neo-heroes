@@ -24,61 +24,6 @@ export class CharacterService {
         }
     }
 
-    static calculateModifiers(character: Character): ICalculatedCharacter {
-        const attributes = character.attributes;
-        if (!attributes) {
-            throw new Error("Character must have attributes to calculate modifiers");
-        }
-
-        const calculatedAttackModifier = {
-            value: 0,
-            description: attributes.attack_modifier.description
-        };
-        
-        const calculatedSpeedModifier = {
-            value: 0,
-            description: attributes.speed_modifier.description
-        };
-
-        // Calculate attack modifier
-        if (attributes.attack_modifier.multipliers.strength) {
-            calculatedAttackModifier.value += attributes.strength * attributes.attack_modifier.multipliers.strength;
-        }
-        if (attributes.attack_modifier.multipliers.dexterity) {
-            calculatedAttackModifier.value += attributes.dexterity * attributes.attack_modifier.multipliers.dexterity;
-        }
-        if (attributes.attack_modifier.multipliers.intelligence) {
-            calculatedAttackModifier.value += attributes.intelligence * attributes.attack_modifier.multipliers.intelligence;
-        }
-
-        // Calculate speed modifier
-        if (attributes.speed_modifier.multipliers.strength) {
-            calculatedSpeedModifier.value += attributes.strength * attributes.speed_modifier.multipliers.strength;
-        }
-        if (attributes.speed_modifier.multipliers.dexterity) {
-            calculatedSpeedModifier.value += attributes.dexterity * attributes.speed_modifier.multipliers.dexterity;
-        }
-        if (attributes.speed_modifier.multipliers.intelligence) {
-            calculatedSpeedModifier.value += attributes.intelligence * attributes.speed_modifier.multipliers.intelligence;
-        }
-
-        return {
-            name: character.name,
-            job: character.job,
-            current_health: attributes.health,
-            max_health: attributes.hp,
-            stats: {
-                strength: attributes.strength,
-                dexterity: attributes.dexterity,
-                intelligence: attributes.intelligence,
-            },
-            battle_modifiers: {
-                attack_modifier: calculatedAttackModifier,
-                speed_modifier: calculatedSpeedModifier
-            }
-        };
-    }
-
     static getAllCharacters(): Array<{ name: string; job: string; status: "alive" | "dead" }> {
         return characters.map((character) => ({
             name: character.name,
@@ -88,9 +33,12 @@ export class CharacterService {
     }
 
     static getCharacterById(id: number): ICalculatedCharacter | undefined {
-        const character = characters.find(char => (char as any).id === id);
-        if (!character) return undefined;
-        return this.calculateModifiers(character);
+        const character = characters.find(c => (c as any).id === id);
+        return character ? character.getFormattedCharacter() : undefined;
+    }
+
+    static getCharacterInstanceById(id: number): Character | undefined {
+        return characters.find(c => (c as any).id === id);
     }
 
     static createCharacter(characterData: ICharacter): ICalculatedCharacter {
@@ -98,7 +46,7 @@ export class CharacterService {
         const newCharacter = new Character(characterData);
         (newCharacter as any).id = nextId++;
         characters.push(newCharacter);
-        return this.calculateModifiers(newCharacter);
+        return newCharacter.getFormattedCharacter();
     }
 
     static updateCharacter(id: number, characterData: { name?: string; job?: Job; attributes?: Partial<IStats> }): ICalculatedCharacter | null {
@@ -128,7 +76,7 @@ export class CharacterService {
         });
         (updatedCharacter as any).id = id;
         characters[index] = updatedCharacter;
-        return this.calculateModifiers(updatedCharacter);
+        return updatedCharacter.getFormattedCharacter();
     }
 
     static deleteCharacter(id: number): boolean {
