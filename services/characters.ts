@@ -2,9 +2,7 @@ import Character from "../models/characters";
 import { ICharacter, ICalculatedCharacter } from "../types";
 import { IStats } from "../types/stats";
 import { Job } from "../types/job";
-
-let characters: Character[] = [];
-let nextId = 1;
+import { CharacterRepository } from "../repositories/characters";
 
 export class CharacterService {
     private static validateCharacterName(name: string): void {
@@ -25,35 +23,34 @@ export class CharacterService {
     }
 
     static getAllCharacters(): Array<{ name: string; job: string; status: "alive" | "dead" }> {
+        const characters = CharacterRepository.findAll();
         return characters.map((character) => ({
             name: character.name,
             job: character.job,
-            status: character.attributes?.health === 0 ? "dead" : "alive"
+            status: character.isAlive() ? "alive" : "dead"
         }));
     }
 
     static getCharacterById(id: number): ICalculatedCharacter | undefined {
-        const character = characters.find(c => (c as any).id === id);
+        const character = CharacterRepository.findById(id);
         return character ? character.getFormattedCharacter() : undefined;
     }
 
     static getCharacterInstanceById(id: number): Character | undefined {
-        return characters.find(c => (c as any).id === id);
+        return CharacterRepository.findById(id);
     }
 
     static createCharacter(characterData: ICharacter): ICalculatedCharacter {
         this.validateCharacterName(characterData.name);
         const newCharacter = new Character(characterData);
-        (newCharacter as any).id = nextId++;
-        characters.push(newCharacter);
-        return newCharacter.getFormattedCharacter();
+        const savedCharacter = CharacterRepository.save(newCharacter);
+        return savedCharacter.getFormattedCharacter();
     }
 
     static updateCharacter(id: number, characterData: { name?: string; job?: Job; attributes?: Partial<IStats> }): ICalculatedCharacter | null {
-        const index = characters.findIndex(char => (char as any).id === id);
-        if (index === -1) return null;
+        const existingCharacter = CharacterRepository.findById(id);
+        if (!existingCharacter) return null;
 
-        const existingCharacter = characters[index];
         const newName = characterData.name ?? existingCharacter.name;
         
         if (characterData.name) {
@@ -74,14 +71,15 @@ export class CharacterService {
             job: characterData.job ?? existingCharacter.job,
             attributes: mergedAttributes
         });
+        
+        // Preserve the ID when updating
         (updatedCharacter as any).id = id;
-        characters[index] = updatedCharacter;
-        return updatedCharacter.getFormattedCharacter();
+        const success = CharacterRepository.update(id, updatedCharacter);
+        
+        return success ? updatedCharacter.getFormattedCharacter() : null;
     }
 
     static deleteCharacter(id: number): boolean {
-        const initialLength = characters.length;
-        characters = characters.filter(char => (char as any).id !== id);
-        return characters.length < initialLength;
+        return CharacterRepository.delete(id);
     }
 }
