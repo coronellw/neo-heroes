@@ -2,7 +2,7 @@
 GET http://localhost:5555/api/characters
 
 ### Get character by ID
-GET http://localhost:5555/api/characters/3
+GET http://localhost:5555/api/characters/2
 
 ### Create a new character (Warrior)
 POST http://localhost:5555/api/characters
@@ -102,3 +102,59 @@ DELETE http://localhost:5555/api/characters/1
 
 ### Get non-existent character
 GET http://localhost:5555/api/characters/999
+
+### ============================================
+### BATTLE ENDPOINT TESTS
+### ============================================
+
+### Start battle between two characters
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId1": 1,
+  "characterId2": 2
+}
+
+### Test battle with missing characterId1
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId2": 2
+}
+
+### Test battle with missing characterId2
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId1": 1
+}
+
+### Test battle with same character (invalid)
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId1": 1,
+  "characterId2": 1
+}
+
+### Test battle with non-existent character
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId1": 1,
+  "characterId2": 999
+}
+
+### Test battle with dead character
+POST http://localhost:5555/api/battle
+Content-Type: application/json
+
+{
+  "characterId1": 1,
+  "characterId2": 4
+}

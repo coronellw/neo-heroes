@@ -1,5 +1,7 @@
 import Character from "../models/characters";
-import { ICharacter } from "../types";
+import { ICharacter, ICalculatedCharacter } from "../types";
+import { IStats } from "../types/stats";
+import { Job } from "../types/job";
 
 let characters: Character[] = [];
 let nextId = 1;
@@ -22,9 +24,11 @@ export class CharacterService {
         }
     }
 
-    private static calculateModifiers(character: Character): any {
+    static calculateModifiers(character: Character): ICalculatedCharacter {
         const attributes = character.attributes;
-        if (!attributes) return character;
+        if (!attributes) {
+            throw new Error("Character must have attributes to calculate modifiers");
+        }
 
         const calculatedAttackModifier = {
             value: 0,
@@ -83,13 +87,13 @@ export class CharacterService {
         }));
     }
 
-    static getCharacterById(id: number): any {
+    static getCharacterById(id: number): ICalculatedCharacter | undefined {
         const character = characters.find(char => (char as any).id === id);
         if (!character) return undefined;
         return this.calculateModifiers(character);
     }
 
-    static createCharacter(characterData: ICharacter): any {
+    static createCharacter(characterData: ICharacter): ICalculatedCharacter {
         this.validateCharacterName(characterData.name);
         const newCharacter = new Character(characterData);
         (newCharacter as any).id = nextId++;
@@ -97,7 +101,7 @@ export class CharacterService {
         return this.calculateModifiers(newCharacter);
     }
 
-    static updateCharacter(id: number, characterData: Partial<ICharacter>): any {
+    static updateCharacter(id: number, characterData: { name?: string; job?: Job; attributes?: Partial<IStats> }): ICalculatedCharacter | null {
         const index = characters.findIndex(char => (char as any).id === id);
         if (index === -1) return null;
 
@@ -108,10 +112,19 @@ export class CharacterService {
             this.validateCharacterName(characterData.name);
         }
         
+        // Merge attributes if partial update is provided
+        let mergedAttributes = existingCharacter.attributes;
+        if (characterData.attributes && existingCharacter.attributes) {
+            mergedAttributes = {
+                ...existingCharacter.attributes,
+                ...characterData.attributes
+            } as IStats;
+        }
+        
         const updatedCharacter = new Character({
             name: newName,
             job: characterData.job ?? existingCharacter.job,
-            attributes: characterData.attributes ?? existingCharacter.attributes
+            attributes: mergedAttributes
         });
         (updatedCharacter as any).id = id;
         characters[index] = updatedCharacter;

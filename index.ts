@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import characterRoutes from "./routes/characters";
+import battleRoutes from "./routes/battle";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/characters", characterRoutes);
+app.use("/api/battle", battleRoutes);
 
 app.listen(port, () => {
     console.log(`Neo Hero is running at port ${port}`)
