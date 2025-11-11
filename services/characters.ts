@@ -73,7 +73,7 @@ export class CharacterService {
         });
         
         // Preserve the ID when updating
-        (updatedCharacter as any).id = id;
+        updatedCharacter.id = id;
         const success = CharacterRepository.update(id, updatedCharacter);
         
         return success ? updatedCharacter.getFormattedCharacter() : null;

@@ -4,6 +4,7 @@ import { BASE_STATS } from "../constants";
 
 
 class Character implements ICharacter {
+    id?: number;
     name: string;
     job: Job;
     attributes: IStats;
@@ -61,6 +62,7 @@ class Character implements ICharacter {
 
     getFormattedCharacter(): ICalculatedCharacter {
         return {
+            id: this.id,
             name: this.name,
             job: this.job,
             current_health: this.attributes.health,
