@@ -8,6 +8,8 @@ A simple TypeScript-based RPG game API that allows you to create characters, man
 - **Three Job Classes**: Warrior, Mage, and Thief with unique stats
 - **Battle System**: Turn-based combat with speed and attack modifiers
 - **Type-Safe**: Built with TypeScript for enhanced code quality
+- **Domain-Rich Models**: Character model with encapsulated business logic
+- **Repository Pattern**: Clean separation between data access and business logic
 - **Unit Tested**: Comprehensive test coverage with Jest
 - **RESTful API**: Clean and intuitive HTTP endpoints
 
@@ -20,6 +22,7 @@ A simple TypeScript-based RPG game API that allows you to create characters, man
   - [Battle Endpoints](#battle-endpoints)
 - [Character Jobs](#character-jobs)
 - [Battle Mechanics](#battle-mechanics)
+- [Architecture](#architecture)
 - [Testing](#testing)
 - [Project Structure](#project-structure)
 
@@ -73,6 +76,7 @@ Get detailed information about a specific character including calculated battle 
 **Response:**
 ```json
 {
+  "id": 1,
   "name": "Hero_Warrior",
   "job": "WARRIOR",
   "current_health": 20,
@@ -232,6 +236,58 @@ Hero_Warrior wins the battle! Hero_Warrior still has 9.50 HP remaining!
 
 ---
 
+## 🏗️ Architecture
+
+The project follows a layered architecture pattern with clear separation of concerns:
+
+### Domain Model Layer (`models/`)
+- **Character Model**: Rich domain model with business logic
+  - `id`: Unique identifier (managed by repository)
+  - `isAlive()`: Check if character can participate in battles
+  - `canBattle()`: Validate battle readiness
+  - `takeDamage(amount)`: Apply damage with health bounds checking
+  - `getAttackModifier()`: Calculate attack power from attributes
+  - `getSpeedModifier()`: Calculate speed from attributes
+  - `getFormattedCharacter()`: Transform to API response format
+
+### Repository Layer (`repositories/`)
+- **CharacterRepository**: Data access layer
+  - `findAll()`: Retrieve all characters
+  - `findById(id)`: Find character by ID
+  - `save(character)`: Persist new character with auto-generated ID
+  - `update(id, character)`: Update existing character
+  - `delete(id)`: Remove character from storage
+  - Manages in-memory storage and ID generation
+  - No business logic - pure data operations
+
+### Service Layer (`services/`)
+- **CharacterService**: Business logic orchestration
+  - Name validation (4-15 chars, letters/underscores only)
+  - Character formatting for API responses
+  - Delegates data access to repository
+  - Coordinates between model and repository
+
+- **BattleService**: Combat simulation
+  - Uses Character domain methods directly
+  - Turn-based combat with speed calculations
+  - Automatic health updates via `takeDamage()`
+  - Battle state management and logging
+
+### Controller Layer (`controllers/`)
+- **HTTP request/response handling**
+- Input validation and error handling
+- Delegates to service layer
+
+### Benefits of This Architecture
+✅ **Single Responsibility**: Each layer has one clear purpose  
+✅ **Type Safety**: ID is part of Character model, no casting needed  
+✅ **Encapsulation**: Health and combat logic inside Character model  
+✅ **Testability**: Easy to mock repository for service tests  
+✅ **Maintainability**: Changes to data storage don't affect business logic  
+✅ **Scalability**: Easy to swap in-memory storage for a database
+
+---
+
 ## 🧪 Testing
 
 Run all tests:
@@ -250,10 +306,45 @@ npm run test:coverage
 ```
 
 ### Test Coverage
-- **Character Model**: 9 tests
-- **Character Service**: 19 tests
-- **Battle Service**: 23 tests
-- **Total:** 51 tests
+- **Character Model**: 9 tests (domain methods)
+- **Character Service**: 19 tests (business logic & validation)
+- **Battle Service**: 23 tests (combat mechanics)
+- **Total:** 51 tests passing
+
+---
+
+## 📂 Project Structure
+
+```
+neo-take-home/
+├── models/
+│   └── characters.ts          # Character domain model with business logic
+├── repositories/
+│   └── characters.ts          # Data access layer (CRUD operations)
+├── services/
+│   ├── characters.ts          # Character business logic & validation
+│   └── battle.ts              # Battle simulation using domain methods
+├── controllers/
+│   ├── characters.ts          # HTTP handlers for character endpoints
+│   └── battle.ts              # HTTP handler for battle endpoint
+├── routes/
+│   ├── characters.ts          # Character API routes
+│   └── battle.ts              # Battle API routes
+├── types/
+│   ├── job.ts                 # Job enum (WARRIOR, MAGE, THIEF)
+│   ├── characters.ts          # Character interfaces
+│   ├── stats.ts               # Stats and modifier types
+│   └── attributes.ts          # Attribute interfaces
+├── constants/
+│   └── index.ts               # Base stats for each job class
+├── __tests__/
+│   ├── character.test.ts      # Character model tests
+│   ├── character-service.test.ts  # Service layer tests
+│   └── battle-service.test.ts     # Battle mechanics tests
+├── index.ts                   # Express server entry point
+├── test.http                  # REST Client examples
+└── README.md
+```
 
 ---
 

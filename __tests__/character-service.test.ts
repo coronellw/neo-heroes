@@ -1,14 +1,15 @@
 import { CharacterService } from "../services/characters";
+import { CharacterRepository } from "../repositories/characters";
 import { Job } from "../types/job";
-
-// Reset characters before each test
-beforeEach(() => {
-    // Clear the characters array by deleting all
-    const allChars = CharacterService.getAllCharacters();
-    // Since we can't directly access the private array, we'll use the service methods
-});
+import { ICalculatedCharacter } from "../types";
 
 describe("CharacterService", () => {
+    // Clear repository state before each test for proper isolation
+    beforeEach(() => {
+        (CharacterRepository as any).characters = [];
+        (CharacterRepository as any).nextId = 1;
+    });
+
     describe("Character Creation", () => {
         it("should create a new character", () => {
             const characterData = {
@@ -18,6 +19,7 @@ describe("CharacterService", () => {
 
             const result = CharacterService.createCharacter(characterData);
 
+            expect(result.id).toBe(1);
             expect(result.name).toBe("TestHero");
             expect(result.job).toBe(Job.Warrior);
             expect(result.current_health).toBeGreaterThan(0);
@@ -178,27 +180,27 @@ describe("CharacterService", () => {
                 job: Job.Warrior
             });
 
-            // Need to get the ID - for testing purposes, we'll assume ID is 1
-            // In a real scenario, you'd extract this from the created character
-            const updated = CharacterService.updateCharacter(1, {
+            const updated = CharacterService.updateCharacter(created.id!, {
                 name: "NewName"
             });
 
             expect(updated).not.toBeNull();
             expect(updated?.name).toBe("NewName");
+            expect(updated?.id).toBe(created.id);
         });
 
         it("should update character job", () => {
-            CharacterService.createCharacter({
+            const created = CharacterService.createCharacter({
                 name: "JobChange",
                 job: Job.Warrior
             });
 
-            const updated = CharacterService.updateCharacter(1, {
+            const updated = CharacterService.updateCharacter(created.id!, {
                 job: Job.Mage
             });
 
             expect(updated?.job).toBe(Job.Mage);
+            expect(updated?.name).toBe("JobChange");
         });
 
         it("should return null for non-existent character", () => {
@@ -210,33 +212,144 @@ describe("CharacterService", () => {
         });
 
         it("should validate name on update", () => {
-            CharacterService.createCharacter({
+            const created = CharacterService.createCharacter({
                 name: "ValidName",
                 job: Job.Warrior
             });
 
             expect(() => {
-                CharacterService.updateCharacter(1, {
+                CharacterService.updateCharacter(created.id!, {
                     name: "Bad" // Too short
                 });
-            }).toThrow();
+            }).toThrow("Character name must be between 4 and 15 characters");
+        });
+
+        it("should update partial attributes", () => {
+            const created = CharacterService.createCharacter({
+                name: "PartialUpdate",
+                job: Job.Warrior
+            });
+
+            const updated = CharacterService.updateCharacter(created.id!, {
+                attributes: { health: 10 }
+            });
+
+            expect(updated?.current_health).toBe(10);
+            expect(updated?.stats.strength).toBe(created.stats.strength); // Other stats unchanged
+        });
+
+        it("should preserve character ID on update", () => {
+            const created = CharacterService.createCharacter({
+                name: "PreserveID",
+                job: Job.Warrior
+            });
+
+            const originalId = created.id;
+            const updated = CharacterService.updateCharacter(originalId!, {
+                name: "UpdatedName",
+                job: Job.Mage
+            });
+
+            expect(updated?.id).toBe(originalId);
         });
     });
 
     describe("Delete Character", () => {
         it("should delete existing character", () => {
-            CharacterService.createCharacter({
+            const created = CharacterService.createCharacter({
                 name: "DeleteMe",
                 job: Job.Warrior
             });
 
-            const result = CharacterService.deleteCharacter(1);
+            const result = CharacterService.deleteCharacter(created.id!);
+            
             expect(result).toBe(true);
+            
+            const found = CharacterService.getCharacterById(created.id!);
+            expect(found).toBeUndefined();
         });
 
         it("should return false when deleting non-existent character", () => {
             const result = CharacterService.deleteCharacter(9999);
             expect(result).toBe(false);
+        });
+
+        it("should remove character from getAllCharacters", () => {
+            const char1 = CharacterService.createCharacter({ name: "Keep", job: Job.Warrior });
+            const char2 = CharacterService.createCharacter({ name: "Delete", job: Job.Mage });
+
+            expect(CharacterService.getAllCharacters().length).toBe(2);
+
+            CharacterService.deleteCharacter(char2.id!);
+
+            const all = CharacterService.getAllCharacters();
+            expect(all.length).toBe(1);
+            expect(all[0].name).toBe("Keep");
+        });
+    });
+
+    describe("Get Character Instance", () => {
+        it("should return Character instance for valid ID", () => {
+            const created = CharacterService.createCharacter({
+                name: "InstanceTest",
+                job: Job.Warrior
+            });
+
+            const instance = CharacterService.getCharacterInstanceById(created.id!);
+
+            expect(instance).toBeDefined();
+            expect(instance?.name).toBe("InstanceTest");
+            expect(typeof instance?.isAlive).toBe("function");
+            expect(typeof instance?.takeDamage).toBe("function");
+        });
+
+        it("should return undefined for non-existent ID", () => {
+            const instance = CharacterService.getCharacterInstanceById(9999);
+            expect(instance).toBeUndefined();
+        });
+
+        it("should return same instance as repository", () => {
+            const created = CharacterService.createCharacter({
+                name: "SameInstance",
+                job: Job.Warrior
+            });
+
+            const fromService = CharacterService.getCharacterInstanceById(created.id!);
+            const fromRepo = CharacterRepository.findById(created.id!);
+
+            expect(fromService).toBe(fromRepo);
+        });
+    });
+
+    describe("Character Status Integration", () => {
+        it("should show alive status when using isAlive() method", () => {
+            const created = CharacterService.createCharacter({
+                name: "AliveTest",
+                job: Job.Warrior
+            });
+
+            const instance = CharacterService.getCharacterInstanceById(created.id!);
+            const all = CharacterService.getAllCharacters();
+            const status = all.find(c => c.name === "AliveTest")?.status;
+
+            expect(instance?.isAlive()).toBe(true);
+            expect(status).toBe("alive");
+        });
+
+        it("should show dead status after health reaches 0", () => {
+            const created = CharacterService.createCharacter({
+                name: "DeadTest",
+                job: Job.Warrior
+            });
+
+            CharacterService.updateCharacter(created.id!, {
+                attributes: { health: 0 }
+            });
+
+            const all = CharacterService.getAllCharacters();
+            const status = all.find(c => c.name === "DeadTest")?.status;
+
+            expect(status).toBe("dead");
         });
     });
 });

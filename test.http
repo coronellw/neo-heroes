@@ -53,6 +53,6 @@ POST http://localhost:5555/api/battle
 Content-Type: application/json
 
 {
-  "characterId1": 1,
-  "characterId2": 2
+  "characterId1": 2,
+  "characterId2": 3
 }

@@ -24,7 +24,7 @@ export class BattleService {
             throw new Error(`${p2.name} is already dead and cannot battle`);
         }
 
-        let log = `Battle between ${p1.name} (${p1.job}) - ${p1.attributes.health} HP and ${p2.name} (${p2.job}) - ${p2.attributes.health} HP begins!\n`;
+        let log = `Battle between ${p1.name} (${p1.job}) - ${p1.attributes.health.toFixed(2)} HP and ${p2.name} (${p2.job}) - ${p2.attributes.health} HP begins!\n`;
 
         // Battle loop continues while both are alive
         while (p1.isAlive() && p2.isAlive()) {
