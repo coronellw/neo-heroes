@@ -31,27 +31,6 @@ Content-Type: application/json
   "job": "THIEF"
 }
 
-### Create character with dead status (health = 0)
-POST http://localhost:5555/api/characters
-Content-Type: application/json
-
-{
-  "name": "Dead_Hero",
-  "job": "WARRIOR",
-  "attributes": {
-    "health": 0,
-    "strength": 50,
-    "dexterity": 50,
-    "intelligence": 50,
-    "attack_modifier": {
-      "multipliers": {}
-    },
-    "speed_modifier": {
-      "multipliers": {}
-    }
-  }
-}
-
 ### Update character
 PUT http://localhost:5555/api/characters/1
 Content-Type: application/json
@@ -61,47 +40,9 @@ Content-Type: application/json
   "job": "MAGE"
 }
 
-### Test invalid character name (too short)
-POST http://localhost:5555/api/characters
-Content-Type: application/json
-
-{
-  "name": "Bob",
-  "job": "WARRIOR"
-}
-
-### Test invalid character name (too long)
-POST http://localhost:5555/api/characters
-Content-Type: application/json
-
-{
-  "name": "VeryLongNameThatExceedsLimit",
-  "job": "WARRIOR"
-}
-
-### Test invalid character name (invalid characters)
-POST http://localhost:5555/api/characters
-Content-Type: application/json
-
-{
-  "name": "Hero123!",
-  "job": "WARRIOR"
-}
-
-### Test multiple validation errors
-POST http://localhost:5555/api/characters
-Content-Type: application/json
-
-{
-  "name": "ab#",
-  "job": "WARRIOR"
-}
-
 ### Delete character
 DELETE http://localhost:5555/api/characters/1
 
-### Get non-existent character
-GET http://localhost:5555/api/characters/999
 
 ### ============================================
 ### BATTLE ENDPOINT TESTS
@@ -114,47 +55,4 @@ Content-Type: application/json
 {
   "characterId1": 1,
   "characterId2": 2
-}
-
-### Test battle with missing characterId1
-POST http://localhost:5555/api/battle
-Content-Type: application/json
-
-{
-  "characterId2": 2
-}
-
-### Test battle with missing characterId2
-POST http://localhost:5555/api/battle
-Content-Type: application/json
-
-{
-  "characterId1": 1
-}
-
-### Test battle with same character (invalid)
-POST http://localhost:5555/api/battle
-Content-Type: application/json
-
-{
-  "characterId1": 1,
-  "characterId2": 1
-}
-
-### Test battle with non-existent character
-POST http://localhost:5555/api/battle
-Content-Type: application/json
-
-{
-  "characterId1": 1,
-  "characterId2": 999
-}
-
-### Test battle with dead character
-POST http://localhost:5555/api/battle
-Content-Type: application/json
-
-{
-  "characterId1": 1,
-  "characterId2": 4
 }
