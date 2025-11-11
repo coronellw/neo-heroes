@@ -1,0 +1,104 @@
+### Get all characters
+GET http://localhost:5555/api/characters
+
+### Get character by ID
+GET http://localhost:5555/api/characters/3
+
+### Create a new character (Warrior)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Hero_Warrior",
+  "job": "WARRIOR"
+}
+
+### Create a new character (Mage)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Magic_User",
+  "job": "MAGE"
+}
+
+### Create a new character (Thief)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Silent_Rogue",
+  "job": "THIEF"
+}
+
+### Create character with dead status (health = 0)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Dead_Hero",
+  "job": "WARRIOR",
+  "attributes": {
+    "health": 0,
+    "strength": 50,
+    "dexterity": 50,
+    "intelligence": 50,
+    "attack_modifier": {
+      "multipliers": {}
+    },
+    "speed_modifier": {
+      "multipliers": {}
+    }
+  }
+}
+
+### Update character
+PUT http://localhost:5555/api/characters/1
+Content-Type: application/json
+
+{
+  "name": "Updated_Hero",
+  "job": "MAGE"
+}
+
+### Test invalid character name (too short)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Bob",
+  "job": "WARRIOR"
+}
+
+### Test invalid character name (too long)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "VeryLongNameThatExceedsLimit",
+  "job": "WARRIOR"
+}
+
+### Test invalid character name (invalid characters)
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "Hero123!",
+  "job": "WARRIOR"
+}
+
+### Test multiple validation errors
+POST http://localhost:5555/api/characters
+Content-Type: application/json
+
+{
+  "name": "ab#",
+  "job": "WARRIOR"
+}
+
+### Delete character
+DELETE http://localhost:5555/api/characters/1
+
+### Get non-existent character
+GET http://localhost:5555/api/characters/999
