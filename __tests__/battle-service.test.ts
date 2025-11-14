@@ -1,8 +1,7 @@
 import { BattleService } from "../services/battle";
 import { CharacterService } from "../services/characters";
 import { CharacterRepository } from "../repositories/characters";
-import { Job } from "../types/job";
-import { ICalculatedCharacter } from "../types";
+import { Job, ICalculatedCharacter } from "@neo-heroes/types";
 
 describe("BattleService", () => {
     let character1: ICalculatedCharacter;

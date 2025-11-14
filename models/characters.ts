@@ -1,5 +1,4 @@
-import { Job } from "../types/job"
-import { ICalculatedCharacter, ICharacter, IStats } from "../types"
+import { Job, ICalculatedCharacter, ICharacter, IStats } from "@neo-heroes/types"
 import { BASE_STATS } from "../constants";
 
 

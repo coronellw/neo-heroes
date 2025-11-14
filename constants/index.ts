@@ -1,5 +1,4 @@
-import { Job } from "../types";
-import { IStats } from "../types";
+import { Job, IStats } from "@neo-heroes/types";
 
 export const BASE_STATS: Record<Job, Omit<IStats, "health">> = {
     [Job.Mage]: {

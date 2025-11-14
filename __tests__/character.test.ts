@@ -1,5 +1,5 @@
 import Character from "../models/characters";
-import { Job } from "../types/job";
+import { Job } from "@neo-heroes/types";
 import { BASE_STATS } from "../constants";
 
 describe("Character Model", () => {

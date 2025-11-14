@@ -1,7 +1,6 @@
 import { CharacterService } from "../services/characters";
 import { CharacterRepository } from "../repositories/characters";
-import { Job } from "../types/job";
-import { ICalculatedCharacter } from "../types";
+import { Job, ICalculatedCharacter } from "@neo-heroes/types";
 
 describe("CharacterService", () => {
     // Clear repository state before each test for proper isolation

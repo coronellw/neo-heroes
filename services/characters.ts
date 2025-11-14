@@ -1,7 +1,5 @@
 import Character from "../models/characters";
-import { ICharacter, ICalculatedCharacter } from "../types";
-import { IStats } from "../types/stats";
-import { Job } from "../types/job";
+import { ICharacter, ICalculatedCharacter, IStats, Job } from "@neo-heroes/types";
 import { CharacterRepository } from "../repositories/characters";
 
 export class CharacterService {

@@ -1,6 +1,6 @@
 import { CharacterRepository } from "../repositories/characters";
 import Character from "../models/characters";
-import { Job } from "../types/job";
+import { Job } from "@neo-heroes/types";
 
 describe("CharacterRepository", () => {
     // Helper to clear repository state between tests

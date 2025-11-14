@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { CharacterService } from "../services/characters";
-import { ICharacter } from "../types";
+import { ICharacter } from "@neo-heroes/types";
 
 export class CharacterController {
     static async getAll(req: Request, res: Response): Promise<void> {
